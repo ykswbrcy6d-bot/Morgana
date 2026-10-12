@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
-<title>Morgana — Архив АРТЭГО</title>
+<title>Morgana — Система АРТЭГО</title>
 <style>
   * { box-sizing: border-box; }
   body { font-family: Arial, sans-serif; background: #0f172a; color: #e2e8f0; margin: 0; padding: 20px; }
@@ -12,6 +12,7 @@
   .sub { color: #94a3b8; margin-bottom: 20px; font-size: 14px; }
   .toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
   input, select, textarea, button { padding: 8px 10px; border-radius: 6px; border: 1px solid #334155; background: #1e293b; color: #e2e8f0; font-size: 14px; }
+  input.req { border-color: #ef4444; }
   button { cursor: pointer; background: #2563eb; border: none; }
   button:hover { background: #1d4ed8; }
   button.gray { background: #475569; }
@@ -47,8 +48,10 @@
   .dossier-info .field { font-size: 13px; margin-bottom: 4px; color: #cbd5e1; }
   .dossier-info .field b { color: #94a3b8; font-weight: normal; }
   .hint { color: #64748b; font-size: 12px; margin-top: 4px; margin-bottom: 10px; }
+  .req-star { color: #ef4444; }
   #status { position: fixed; top: 10px; right: 10px; background: #1e293b; color: #38bdf8; padding: 6px 12px; border-radius: 6px; font-size: 12px; z-index: 200; }
   .success-box { background: #14532d; border: 1px solid #22c55e; color: #bbf7d0; padding: 16px; border-radius: 8px; text-align: center; font-size: 15px; }
+  .err-box { background: #7f1d1d; border: 1px solid #ef4444; color: #fecaca; padding: 12px; border-radius: 8px; font-size: 13px; margin-top: 10px; display: none; }
 </style>
 </head>
 <body>
@@ -68,10 +71,10 @@
   </svg>
   <div>
     <h1>MORGANA</h1>
-    <div class="tagline">Открытая база досье · ООО «АРТЭГО»</div>
+    <div class="tagline">Система · ООО «АРТЭГО»</div>
   </div>
 </div>
-<div class="sub">Просмотр открыт всем. Изменения вносятся только администратором. Если знаете о нарушении — нажмите «Сообщить о нарушении».</div>
+<div class="sub">Система открыта для просмотра. Изменения вносятся только администратором. Если знаете о нарушении — нажмите «Сообщить о нарушении».</div>
 
 <div class="counters">
   <span>Всего досье: <b id="cntAll">0</b></span>
@@ -146,11 +149,12 @@
       <button class="gray" onclick="closeLead()">Закрыть</button>
     </div>
     <div id="leadForm">
-      <div class="hint">Все поля, кроме описания, можно оставить пустыми.</div>
-      <label>Ваше имя (по желанию)</label><input id="l_name">
-      <label>Контакт для связи (по желанию)</label><input id="l_contact">
+      <div class="hint">Поля со <span class="req-star">*</span> обязательны для заполнения.</div>
+      <label>ФИО <span class="req-star">*</span></label><input id="l_name" class="req" placeholder="Иванов Иван Иванович">
+      <label>Контактный телефон <span class="req-star">*</span></label><input id="l_contact" class="req" placeholder="+7 (___) ___-__-__">
       <label>Адрес/место нарушения (по желанию)</label><input id="l_address">
-      <label>Опишите нарушение *</label><textarea id="l_desc" rows="6" placeholder="Что произошло, где, когда..."></textarea>
+      <label>Опишите нарушение <span class="req-star">*</span></label><textarea id="l_desc" rows="6" placeholder="Что произошло, где, когда..."></textarea>
+      <div class="err-box" id="leadError"></div>
       <div class="modal-actions">
         <button class="gray" onclick="closeLead()">Отмена</button>
         <button class="green" onclick="submitLead()">Отправить</button>
@@ -165,7 +169,7 @@
 </div>
 
 <script>
-const SUPABASE_URL = 'https://gejohbwajglqcfpjvzp.supabase.co';
+const SUPABASE_URL = 'https://gejohbwajglqcfpvjvzp.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_K1nHw2d8Am1qcgQ3nMzzIQ_RsDCoqGe';
 
 const HEADERS = {
@@ -285,6 +289,7 @@ function renderEpisodes(episodes) {
 function openLead() {
   document.getElementById('leadForm').style.display = 'block';
   document.getElementById('leadSuccess').style.display = 'none';
+  document.getElementById('leadError').style.display = 'none';
   document.getElementById('l_name').value = '';
   document.getElementById('l_contact').value = '';
   document.getElementById('l_address').value = '';
@@ -294,16 +299,30 @@ function openLead() {
 
 function closeLead() { document.getElementById('leadModal').classList.remove('open'); }
 
+function showErr(msg) {
+  const b = document.getElementById('leadError');
+  b.textContent = msg;
+  b.style.display = 'block';
+}
+
 async function submitLead() {
+  const name = document.getElementById('l_name').value.trim();
+  const contact = document.getElementById('l_contact').value.trim();
+  const address = document.getElementById('l_address').value.trim();
   const desc = document.getElementById('l_desc').value.trim();
-  if (!desc) { alert('Опишите нарушение'); return; }
+
+  if (!name) { showErr('Укажите ФИО.'); return; }
+  if (!contact) { showErr('Укажите контактный телефон.'); return; }
+  if (!desc) { showErr('Опишите нарушение.'); return; }
+
   const payload = {
-    name: document.getElementById('l_name').value || null,
-    contact: document.getElementById('l_contact').value || null,
-    address: document.getElementById('l_address').value || null,
+    name: name,
+    contact: contact,
+    address: address || null,
     description: desc,
     status: 'new'
   };
+
   try {
     const r = await fetch(SUPABASE_URL + '/rest/v1/leads', {
       method: 'POST', headers: HEADERS, body: JSON.stringify(payload)
@@ -313,7 +332,7 @@ async function submitLead() {
     document.getElementById('leadSuccess').style.display = 'block';
     setTimeout(closeLead, 3500);
   } catch(e) {
-    alert('Ошибка отправки: ' + e.message);
+    showErr('Ошибка отправки: ' + e.message);
   }
 }
 
