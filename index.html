@@ -141,8 +141,8 @@
 <table>
   <thead>
     <tr>
-      <th>Фото</th><th>№</th><th>Фигурант</th><th>Должность</th><th>Ведомство</th>
-      <th>Статус</th><th>Эпизодов</th><th>Квалификация</th>
+      <th>Фото</th><th>№</th><th>Фигурант</th><th>Суть</th><th>Ведомство</th>
+<th>Статус</th><th>Эпизодов</th><th>Квалификация</th>
     </tr>
   </thead>
   <tbody id="tbody"></tbody>
@@ -169,8 +169,11 @@
       </div>
     </div>
 
-    <h3 style="color:#38bdf8; border-bottom:1px solid #334155; padding-bottom:6px;">Эпизоды</h3>
-    <div id="episodesList"></div>
+    <h3 style="color:#38bdf8; border-bottom:1px solid #334155; padding-bottom:6px;">Суть</h3>
+<div id="d_sut_display" style="font-size:14px; margin-bottom:16px;"></div>
+
+<h3 style="color:#38bdf8; border-bottom:1px solid #334155; padding-bottom:6px;">Эпизоды</h3>
+<div id="episodesList"></div>
 
     <h3 style="color:#38bdf8; border-bottom:1px solid #334155; padding-bottom:6px; margin-top:20px;">Квалификация</h3>
     <div id="d_art_display" style="font-size:14px;"></div>
@@ -270,14 +273,14 @@ function render() {
     tr.onclick = () => openDossier(item.id);
     const photo = item.photo ? `<img src="${item.photo}" class="avatar">` : `<div class="avatar-placeholder">${(item.name||'?')[0]}</div>`;
     tr.innerHTML = `
-      <td data-label="Фото">${photo}</td>
-      <td data-label="№">${esc(item.num)}</td>
-      <td data-label="Фигурант">${esc(item.name)}</td>
-      <td data-label="Должность">${esc(item.pos)}</td>
-      <td data-label="Ведомство">${esc(item.dep)}</td>
-      <td data-label="Статус"><span class="status ${item.status==='active'?'st-active':'st-archive'}">${item.status==='active'?'Активное':'Архив'}</span></td>
-      <td data-label="Эпизодов">${(item.episodes||[]).length}</td>
-      <td data-label="Квалификация">${esc(item.art)}</td>`;
+  <td data-label="Фото">${photo}</td>
+  <td data-label="№">${esc(item.num)}</td>
+  <td data-label="Фигурант">${esc(item.name)}</td>
+  <td data-label="Суть">${esc(item.sut)}</td>
+  <td data-label="Ведомство">${esc(item.dep)}</td>
+  <td data-label="Статус"><span class="status ${item.status==='active'?'st-active':'st-archive'}">${item.status==='active'?'Активное':'Архив'}</span></td>
+  <td data-label="Эпизодов">${(item.episodes||[]).length}</td>
+  <td data-label="Квалификация">${esc(item.art)}</td>`;
     tbody.appendChild(tr);
   });
 }
@@ -290,7 +293,7 @@ function openDossier(id) {
   document.getElementById('d_pos_display').textContent = item.pos || '—';
   document.getElementById('d_dep_display').textContent = item.dep || '—';
   document.getElementById('d_status_display').textContent = item.status === 'active' ? 'Активное' : 'Архив';
-  document.getElementById('d_art_display').textContent = item.art || '—';
+  document.getElementById('d_sut_display').textContent = item.sut || '—';
   document.getElementById('d_res_display').textContent = item.res || '—';
   document.getElementById('d_notes_display').textContent = item.notes || '—';
 
